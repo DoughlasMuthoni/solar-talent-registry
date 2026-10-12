@@ -167,7 +167,7 @@ Rectuiter/
     └── tests/scoring.test.mjs          # Scoring rule tests (node:test)
 ```
 
-Git repository (local only, no remote). No package manager, build step or linter.
+Git repository: public on GitHub (DoughlasMuthoni/solar-talent-registry), branch `main`. The repo is public, so never commit secrets, account names or server details. The local `master` branch keeps the pre-publication history and is not pushed. No package manager, build step or linter.
 
 ## Running and testing
 
