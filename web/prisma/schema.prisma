@@ -1,0 +1,523 @@
+// Waterlift Solar — Solar Talent Registry
+// PostgreSQL (Supabase in staging/production) via @prisma/adapter-pg.
+// After editing: `npm run db:migrate` then `npm run db:generate`.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ───────────────────────────── Staff ─────────────────────────────
+
+/// Single role by decision (2026-10-07): every staff user is an admin.
+enum Role {
+  ADMIN
+}
+
+/// Staff member. `id` is the Supabase Auth user id (auth.users.id).
+model User {
+  id        String   @id
+  email     String   @unique
+  name      String
+  role      Role     @default(ADMIN)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  licenceVerifications       Licence[]        @relation("LicenceVerifiedBy")
+  qualificationVerifications Qualification[]  @relation("QualificationVerifiedBy")
+  notes                      Note[]
+  stageChanges               StageChange[]
+  scoringRuleSets            ScoringRuleSet[]
+  auditEvents                AuditEvent[]
+  assessments                Assessment[]
+  emailsSent                 EmailLog[]
+
+  @@map("users")
+}
+
+// ─────────────────────────── Candidates ──────────────────────────
+
+enum Travel {
+  COUNTY
+  REGION
+  NATIONAL
+}
+
+enum Engagement {
+  PERMANENT
+  REGIONAL_RETAINER
+  PROJECT_CONTRACTOR
+  ANY
+}
+
+/// A person. One candidate can submit several applications over time.
+model Candidate {
+  id         String     @id @default(cuid())
+  fullName   String     @db.VarChar(200)
+  email      String     @unique @db.VarChar(254)
+  phone      String     @db.VarChar(32)
+  town       String     @db.VarChar(120)
+  county     String     @db.VarChar(40)
+  region     String     @db.VarChar(40)
+  travel     Travel     @default(COUNTY)
+  engagement Engagement @default(ANY)
+  /// Fictional seed/demo record — never real personal data.
+  isDemo     Boolean    @default(false)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  applications Application[]
+  licences     Licence[]
+  consents     ConsentRecord[]
+
+  @@index([county])
+  @@index([region])
+  @@map("candidates")
+}
+
+enum EpraClass {
+  T1
+  T2
+  T3
+  NONE
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  NOT_FOUND
+  MISMATCH
+  EXPIRED
+}
+
+/// EPRA solar PV technician licence, verified by a human against the public register.
+model Licence {
+  id           String             @id @default(cuid())
+  candidateId  String
+  candidate    Candidate          @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  epraClass    EpraClass
+  number       String?            @db.VarChar(80)
+  expiresOn    DateTime?          @db.Date
+  issueNote    String?            @db.Text
+  status       VerificationStatus @default(PENDING)
+  verifiedById String?
+  verifiedBy   User?              @relation("LicenceVerifiedBy", fields: [verifiedById], references: [id], onDelete: SetNull)
+  verifiedAt   DateTime?
+  /// What the verifier saw on the register (class, status, expiry), or why it failed.
+  evidenceNote String?            @db.Text
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  applications Application[]
+
+  @@index([status])
+  @@index([expiresOn])
+  @@map("licences")
+}
+
+/// Formal (non-EPRA) qualifications, lowest to highest. Ranked in src/lib/qualifications.ts.
+enum QualificationLevel {
+  TRADE_TEST
+  ARTISAN
+  CERTIFICATE
+  DIPLOMA
+  HIGHER_DIPLOMA
+  DEGREE
+  OTHER
+}
+
+/// A certificate, diploma or degree the candidate holds. Verified by a human (institution, KNEC, NITA, TVET CDACC).
+model Qualification {
+  id                String             @id @default(cuid())
+  applicationId     String
+  application       Application        @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  position          Int
+  level             QualificationLevel
+  /// Course or field, e.g. "Electrical installation", "Solar PV installation".
+  field             String             @db.VarChar(200)
+  institution       String             @db.VarChar(200)
+  yearCompleted     Int
+  certificateNumber String?            @db.VarChar(80)
+  status            VerificationStatus @default(PENDING)
+  verifiedById      String?
+  verifiedBy        User?              @relation("QualificationVerifiedBy", fields: [verifiedById], references: [id], onDelete: SetNull)
+  verifiedAt        DateTime?
+  /// What the verifier checked (institution, examining body, certificate), or why it failed.
+  evidenceNote      String?            @db.Text
+
+  @@unique([applicationId, position])
+  @@index([status])
+  @@map("qualifications")
+}
+
+// ────────────────────────── Applications ─────────────────────────
+
+/// Which kind of technician the candidate is applying as. Decides the eligibility gate.
+enum Track {
+  /// Holds an EPRA solar PV technician licence (T1–T3).
+  EPRA_LICENSED
+  /// Formally qualified solar technician without an EPRA licence (yet).
+  QUALIFIED
+}
+
+enum Stage {
+  NEW
+  TECHNICAL_ASSESSMENT
+  PRACTICAL_ASSESSMENT
+  REFERENCE_CHECKS
+  APPROVED_POOL
+  REJECTED
+  WITHDRAWN
+}
+
+/// Where the candidate found the job advert (from ?utm_source= / ?src= on the apply link).
+enum SocialSource {
+  FACEBOOK
+  INSTAGRAM
+  LINKEDIN
+  X
+  TIKTOK
+  WHATSAPP
+  YOUTUBE
+  DIRECT
+  OTHER
+}
+
+enum InstallCategory {
+  RESIDENTIAL
+  INSTITUTIONAL
+  COMMERCIAL_INDUSTRIAL
+  SOLAR_PUMPING
+  HYBRID
+  GRID_TIED
+}
+
+/// One submission. Answers are immutable once submitted; recruiter work lives in related tables.
+model Application {
+  id            String    @id @default(cuid())
+  /// Human-facing sequence used in references like "MUR-T2-0007".
+  number        Int       @unique @default(autoincrement())
+  reference     String    @unique @db.VarChar(32)
+  candidateId   String
+  candidate     Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  licenceId     String?
+  licence       Licence?  @relation(fields: [licenceId], references: [id], onDelete: SetNull)
+  track         Track     @default(EPRA_LICENSED)
+  stage         Stage     @default(NEW)
+  submittedAt   DateTime  @default(now())
+  /// Client-generated key so a double-tap or network retry can't create duplicates.
+  submissionKey String    @unique @db.VarChar(64)
+
+  // Campaign attribution
+  source      SocialSource @default(DIRECT)
+  utmSource   String?      @db.VarChar(100)
+  utmMedium   String?      @db.VarChar(100)
+  utmCampaign String?      @db.VarChar(100)
+  updatedAt   DateTime     @updatedAt
+
+  // Experience
+  yearsExperience   Decimal  @db.Decimal(4, 1)
+  largestPvKwp      Decimal  @db.Decimal(10, 2)
+  largestInverterKw Decimal? @db.Decimal(10, 2)
+  largestBatteryKwh Decimal? @db.Decimal(10, 2)
+  largestProject    String   @db.Text
+
+  // Technical capability
+  inverters         String  @db.Text
+  batteries         String  @db.Text
+  loggerExperience  String? @db.Text
+  voltageExperience String? @db.Text
+  certifications    String? @db.Text
+  energyAuditor     Boolean @default(false)
+  highVoltage       Boolean @default(false)
+
+  categories     ApplicationCategory[]
+  qualifications Qualification[]
+  referees       Referee[]
+  documents      Document[]
+  scoreRuns      ScoreRun[]
+  notes          Note[]
+  stageChanges   StageChange[]
+  assessments    Assessment[]
+
+  @@index([stage])
+  @@index([track])
+  @@index([submittedAt])
+  @@index([source])
+  @@map("applications")
+}
+
+model ApplicationCategory {
+  applicationId String
+  application   Application     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  category      InstallCategory
+
+  @@id([applicationId, category])
+  @@map("application_categories")
+}
+
+model Referee {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  position      Int
+  /// Name, title, organisation, official contact, project and dates as supplied.
+  details       String      @db.Text
+  contactedAt   DateTime?
+  outcome       String?     @db.Text
+
+  @@unique([applicationId, position])
+  @@map("referees")
+}
+
+enum DocumentKind {
+  EPRA_LICENCE
+  /// Diploma, degree or trade certificate supporting a Qualification.
+  QUALIFICATION
+  CERTIFICATE
+  PROJECT_PHOTO
+  OTHER
+}
+
+enum ScanStatus {
+  PENDING
+  CLEAN
+  INFECTED
+  FAILED
+}
+
+/// Metadata only — file bytes live in private object storage (Phase 2).
+model Document {
+  id            String       @id @default(cuid())
+  applicationId String
+  application   Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  kind          DocumentKind
+  storageKey    String       @unique @db.VarChar(300)
+  fileName      String       @db.VarChar(255)
+  mimeType      String       @db.VarChar(100)
+  sizeBytes     Int
+  scanStatus    ScanStatus   @default(PENDING)
+  uploadedAt    DateTime     @default(now())
+
+  @@map("documents")
+}
+
+// ──────────────────────────── Screening ──────────────────────────
+
+/// Versioned scoring weights/thresholds. Exactly one should be active.
+model ScoringRuleSet {
+  id          String   @id @default(cuid())
+  version     Int      @unique
+  /// Serialised rules — see src/lib/scoring/rules.ts (ScoringRules type).
+  rules       Json
+  active      Boolean  @default(false)
+  notes       String?  @db.Text
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+
+  scoreRuns ScoreRun[]
+
+  @@map("scoring_rule_sets")
+}
+
+enum ScreeningStatus {
+  PRIORITY_REVIEW
+  STANDARD_REVIEW
+  NEEDS_CLARIFICATION
+  BELOW_THRESHOLD
+  INELIGIBLE_LICENCE
+}
+
+/// Preliminary, explainable score. Every run keeps the rule version it used.
+model ScoreRun {
+  id            String          @id @default(cuid())
+  applicationId String
+  application   Application     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  ruleSetId     String
+  ruleSet       ScoringRuleSet  @relation(fields: [ruleSetId], references: [id])
+  experience    Decimal         @db.Decimal(5, 2)
+  technical     Decimal         @db.Decimal(5, 2)
+  verification  Decimal         @db.Decimal(5, 2)
+  total         Int
+  eligible      Boolean
+  status        ScreeningStatus
+  /// Per-rule breakdown so recruiters can see exactly why points were given.
+  breakdown     Json
+  createdAt     DateTime        @default(now())
+
+  @@index([applicationId, createdAt])
+  @@index([status])
+  @@map("score_runs")
+}
+
+// ─────────────────────────── Recruiter work ──────────────────────
+
+model Note {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  authorId      String
+  author        User        @relation(fields: [authorId], references: [id])
+  body          String      @db.Text
+  createdAt     DateTime    @default(now())
+
+  @@map("notes")
+}
+
+/// Pipeline history. Adverse moves (REJECTED) require a reason. Candidate withdrawals have no actor.
+model StageChange {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  fromStage     Stage
+  toStage       Stage
+  reason        String?     @db.Text
+  actorId       String?
+  actor         User?       @relation(fields: [actorId], references: [id])
+  /// True when the candidate made the change themselves (e.g. withdrew via their status link).
+  byCandidate   Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+
+  @@index([applicationId, createdAt])
+  @@map("stage_changes")
+}
+
+// ─────────────────────── Compliance (DPA 2019) ───────────────────
+
+enum ConsentKind {
+  RECRUITMENT_PROCESSING
+  LICENCE_VERIFICATION
+  TALENT_POOL
+}
+
+model ConsentRecord {
+  id            String      @id @default(cuid())
+  candidateId   String
+  candidate     Candidate   @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  kind          ConsentKind
+  /// Version of the notice/consent text the candidate saw.
+  noticeVersion String      @db.VarChar(20)
+  grantedAt     DateTime    @default(now())
+  withdrawnAt   DateTime?
+
+  @@index([candidateId, kind])
+  @@map("consent_records")
+}
+
+/// Append-only log of who did what. Never update or delete rows.
+model AuditEvent {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action     String   @db.VarChar(80)
+  entityType String   @db.VarChar(40)
+  entityId   String   @db.VarChar(40)
+  metadata   Json?
+  ip         String?  @db.VarChar(45)
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actorId, createdAt])
+  @@map("audit_events")
+}
+
+// ───────────────────────────── Email ─────────────────────────────
+
+enum EmailKind {
+  APPLICATION_RECEIVED
+  STATUS_LINK
+  LICENCE_EXPIRY
+  ADMIN_DIGEST
+  ASSESSMENT_INVITE
+  ADMIN_MESSAGE
+}
+
+enum EmailStatus {
+  SENT
+  SKIPPED
+  FAILED
+}
+
+/// Every email we attempt. `dedupeKey` makes scheduled emails idempotent (cron can re-run safely).
+model EmailLog {
+  id            String      @id @default(cuid())
+  kind          EmailKind
+  to            String      @db.VarChar(254)
+  subject       String      @db.VarChar(200)
+  dedupeKey     String?     @unique @db.VarChar(160)
+  status        EmailStatus
+  providerId    String?     @db.VarChar(120)
+  error         String?     @db.Text
+  applicationId String?
+  /// Plain-text body, kept only for admin-written messages (so the history shows what was said).
+  body          String?     @db.Text
+  sentById      String?
+  sentBy        User?       @relation(fields: [sentById], references: [id], onDelete: SetNull)
+  createdAt     DateTime    @default(now())
+
+  @@index([kind, createdAt])
+  @@index([applicationId])
+  @@map("email_logs")
+}
+
+// ───────────────────────────── Abuse protection ─────────────────────────────
+
+/// Fixed-window counters for public endpoints. `key` = action:hmac(ip):window — no raw IPs stored.
+model RateLimit {
+  key       String   @id @db.VarChar(160)
+  count     Int
+  expiresAt DateTime
+
+  @@index([expiresAt])
+  @@map("rate_limits")
+}
+
+// ───────────────────────────── Assessments ─────────────────────────────
+
+enum AssessmentType {
+  TECHNICAL
+  PRACTICAL
+}
+
+enum AssessmentStatus {
+  SCHEDULED
+  COMPLETED
+  NO_SHOW
+  CANCELLED
+}
+
+enum AssessmentResult {
+  PASS
+  FAIL
+}
+
+/// A technical (knowledge) or practical (hands-on) assessment of a candidate.
+model Assessment {
+  id            String            @id @default(cuid())
+  applicationId String
+  application   Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  type          AssessmentType
+  status        AssessmentStatus  @default(SCHEDULED)
+  scheduledAt   DateTime
+  location      String            @db.VarChar(200)
+  /// Shown to the candidate in the invitation (what to bring, contact person, etc.).
+  instructions  String?           @db.Text
+  result        AssessmentResult?
+  score         Int?
+  notes         String?           @db.Text
+  assessorId    String?
+  assessor      User?             @relation(fields: [assessorId], references: [id], onDelete: SetNull)
+  completedAt   DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([status, scheduledAt])
+  @@index([applicationId])
+  @@map("assessments")
+}

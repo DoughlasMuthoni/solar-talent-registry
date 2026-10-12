@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Solar Talent Registry — User Manual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 18mm 16mm 20mm; }
+  @page :first { margin: 0; }
+  :root {
+    --navy: #2E2A65; --ink: #1B1940; --muted: #5B5F7A; --sky: #2CACE1; --link: #0B6E9E;
+    --orange: #EF7F22; --orange-text: #B4560C; --line: #DDE0EC; --tint: #F7F8FC; --sky-tint: #E3F4FB;
+    --ok: #276B2B; --ok-tint: #E6F2E7; --warn: #8A6200; --warn-tint: #FFF5D6; --bad: #B42318; --bad-tint: #FDECEA;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; font: 10pt/1.55 Inter, "Segoe UI", Arial, sans-serif; color: var(--ink); }
+  h1, h2, h3, h4 { font-family: Montserrat, "Segoe UI", Arial, sans-serif; color: var(--navy); line-height: 1.25; }
+  h1 { font-size: 22pt; font-weight: 800; margin: 0 0 4mm; }
+  h2 { font-size: 13.5pt; font-weight: 700; margin: 7mm 0 2.5mm; }
+  h3 { font-size: 11pt; font-weight: 700; margin: 5mm 0 1.5mm; }
+  p { margin: 0 0 2.6mm; }
+  ul, ol { margin: 0 0 3mm; padding-left: 5.5mm; }
+  li { margin-bottom: 1mm; }
+  a { color: var(--link); text-decoration: none; }
+  code, .mono { font-family: "Cascadia Mono", Consolas, monospace; font-size: 8.8pt; background: var(--tint); border: 1px solid var(--line); border-radius: 3px; padding: 0 1.2mm; }
+  strong { font-weight: 600; }
+
+  /* Cover */
+  .cover { height: 297mm; padding: 26mm 22mm; display: flex; flex-direction: column; background:
+      linear-gradient(160deg, #ffffff 0%, #ffffff 55%, var(--sky-tint) 100%); page-break-after: always; position: relative; overflow: hidden; }
+  .cover .logo { width: 105mm; }
+  .cover .kicker { margin-top: 38mm; font: 700 10pt Montserrat, sans-serif; letter-spacing: .18em; color: var(--orange-text); text-transform: uppercase; }
+  .cover h1 { font-size: 34pt; margin: 3mm 0 4mm; line-height: 1.1; }
+  .cover .sub { font-size: 13pt; color: var(--muted); max-width: 130mm; }
+  .cover .bar { height: 2.2mm; width: 40mm; background: var(--orange); border-radius: 2mm; margin: 8mm 0; }
+  .cover .meta { margin-top: auto; display: grid; grid-template-columns: auto 1fr; gap: 1.5mm 6mm; font-size: 9.5pt; color: var(--muted); }
+  .cover .meta b { color: var(--ink); font-weight: 600; }
+  .cover .mark { position: absolute; right: -30mm; bottom: -20mm; width: 150mm; opacity: .07; }
+
+  /* Chapters */
+  .chapter { page-break-before: always; }
+  .chapter-head { display: flex; align-items: baseline; gap: 4mm; border-bottom: 2px solid var(--navy); padding-bottom: 2.5mm; margin-bottom: 5mm; }
+  .chapter-head .num { font: 800 26pt Montserrat, sans-serif; color: var(--orange); line-height: 1; }
+  .chapter-head h1 { margin: 0; }
+  .lead { font-size: 11pt; color: var(--muted); margin-bottom: 5mm; }
+
+  /* Contents */
+  .toc { columns: 1; }
+  .toc ol { list-style: none; padding: 0; counter-reset: c; }
+  .toc > ol > li { display: grid; grid-template-columns: 10mm 1fr; padding: 2.4mm 0; border-bottom: 1px solid var(--line); break-inside: avoid; }
+  .toc > ol > li > .n { font: 800 12pt Montserrat, sans-serif; color: var(--orange); }
+  .toc > ol > li > div > b { font: 700 11pt Montserrat, sans-serif; color: var(--navy); }
+  .toc .desc { color: var(--muted); font-size: 9pt; }
+
+  /* Figures */
+  figure { margin: 3mm 0 5mm; break-inside: avoid; }
+  figure img { display: block; max-width: 100%; border: 1px solid var(--line); border-radius: 2.5mm; box-shadow: 0 1mm 3mm rgba(27,25,64,.06); }
+  figure.phone img { max-height: 150mm; }
+  figure.center img { margin: 0 auto; }
+  figcaption { font-size: 8.5pt; color: var(--muted); margin-top: 1.5mm; }
+  figcaption b { color: var(--navy); }
+  .row { display: flex; gap: 5mm; align-items: flex-start; }
+  .row > * { flex: 1; min-width: 0; }
+  .row.phones figure img { max-height: 135mm; margin: 0 auto; }
+  .side { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; align-items: start; }
+
+  /* Callouts */
+  .note, .tip, .warn { border-radius: 2mm; padding: 3mm 4mm; margin: 3mm 0 4mm; break-inside: avoid; font-size: 9.5pt; }
+  .note { background: var(--sky-tint); border-left: 1.2mm solid var(--link); }
+  .tip { background: #FFF1E5; border-left: 1.2mm solid var(--orange); }
+  .warn { background: var(--bad-tint); border-left: 1.2mm solid var(--bad); }
+  .note b:first-child, .tip b:first-child, .warn b:first-child { display: block; font-family: Montserrat, sans-serif; margin-bottom: .8mm; }
+
+  /* Steps */
+  ol.steps { list-style: none; padding: 0; counter-reset: s; }
+  ol.steps > li { counter-increment: s; position: relative; padding-left: 9mm; margin-bottom: 2.2mm; }
+  ol.steps > li::before { content: counter(s); position: absolute; left: 0; top: .2mm; width: 5.6mm; height: 5.6mm; border-radius: 50%; background: var(--navy); color: #fff; font: 700 8pt/5.6mm Montserrat, sans-serif; text-align: center; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 5mm; font-size: 9pt; break-inside: auto; }
+  th { text-align: left; font: 600 8.5pt Inter, sans-serif; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; border-bottom: 1.5px solid var(--navy); padding: 1.8mm 2mm; }
+  td { border-bottom: 1px solid var(--line); padding: 1.8mm 2mm; vertical-align: top; }
+  tr { break-inside: avoid; }
+  .pill { display: inline-block; border-radius: 10mm; padding: .2mm 2.2mm; font-size: 8.3pt; font-weight: 600; white-space: nowrap; }
+  .p-ok { background: var(--ok-tint); color: var(--ok); } .p-info { background: var(--sky-tint); color: var(--link); }
+  .p-warn { background: var(--warn-tint); color: var(--warn); } .p-bad { background: var(--bad-tint); color: var(--bad); }
+  .p-neutral { background: #EEF0F7; color: var(--muted); }
+
+  .kv { display: grid; grid-template-columns: 42mm 1fr; gap: 1.5mm 4mm; margin: 2mm 0 4mm; }
+  .kv dt { font-weight: 600; color: var(--navy); } .kv dd { margin: 0; }
+  .avoid { break-inside: avoid; }
+  h1, h2, h3 { break-after: avoid; page-break-after: avoid; }
+  .side, .row { break-inside: avoid; }
+  figure.wide img { max-height: 118mm; width: auto; margin: 0 auto; }
+  .flow { display: flex; gap: 2mm; align-items: stretch; margin: 3mm 0 5mm; }
+  .flow div { flex: 1; background: var(--tint); border: 1px solid var(--line); border-radius: 2mm; padding: 2.5mm; font-size: 8.6pt; }
+  .flow div b { display: block; font-family: Montserrat, sans-serif; color: var(--navy); font-size: 9pt; margin-bottom: .6mm; }
+  .flow .arrow { flex: 0 0 auto; background: none; border: 0; padding: 0; align-self: center; color: var(--orange); font-size: 13pt; }
+</style>
+</head>
+<body>
+
+<!-- ───────────────────────── Cover ───────────────────────── -->
+<section class="cover">
+  <img class="logo" src="waterlift-logo.svg" alt="Waterlift Solar">
+  <div class="kicker">User manual</div>
+  <h1>Solar Talent Registry</h1>
+  <div class="sub">Recruiting, verifying and screening EPRA-licensed and qualified solar PV technicians across Kenya.</div>
+  <div class="bar"></div>
+  <dl class="meta">
+    <dt>Web address</dt><dd><b>careers.waterlift.co.ke</b></dd>
+    <dt>For</dt><dd>Waterlift Solar administrators and recruiters</dd>
+    <dt>Version</dt><dd>1.0 · October 2026</dd>
+    <dt>Contact</dt><dd>info@waterlift.co.ke</dd>
+  </dl>
+  <img class="mark" src="waterlift-mark.svg" alt="">
+</section>
+
+<!-- ───────────────────────── Contents ───────────────────────── -->
+<section>
+  <h1>Contents</h1>
+  <div class="toc">
+    <ol>
+      <li><span class="n">1</span><div><b>Overview</b><div class="desc">What the system does, who uses it, and the recruitment journey from advert to approved pool.</div></div></li>
+      <li><span class="n">2</span><div><b>Signing in and account security</b><div class="desc">Admin sign-in, two-factor codes, forgotten passwords, adding admins.</div></div></li>
+      <li><span class="n">3</span><div><b>Advertising and application links</b><div class="desc">Building links for Facebook, WhatsApp, LinkedIn and others, and preselecting the track.</div></div></li>
+      <li><span class="n">4</span><div><b>What candidates see</b><div class="desc">The five-step application, the two tracks, confirmation emails and the private status page.</div></div></li>
+      <li><span class="n">5</span><div><b>Dashboard</b><div class="desc">Key figures, pipeline, screening results, advert sources and expiring licences.</div></div></li>
+      <li><span class="n">6</span><div><b>Candidates list</b><div class="desc">Searching, filtering, sorting and exporting.</div></div></li>
+      <li><span class="n">7</span><div><b>Reviewing a candidate</b><div class="desc">Score breakdown, licence and qualification checks, documents, pipeline stages and notes.</div></div></li>
+      <li><span class="n">8</span><div><b>Assessments</b><div class="desc">Scheduling technical and practical assessments and recording results.</div></div></li>
+      <li><span class="n">9</span><div><b>Messages and emails</b><div class="desc">Messaging one candidate or a group, templates, the email log and automatic emails.</div></div></li>
+      <li><span class="n">10</span><div><b>Scoring rules</b><div class="desc">How the preliminary score works and how to change it safely.</div></div></li>
+      <li><span class="n">11</span><div><b>Data protection</b><div class="desc">Consent, retention, erasure requests and the audit trail (Kenya Data Protection Act 2019).</div></div></li>
+      <li><span class="n">12</span><div><b>Troubleshooting and FAQ</b></div></li>
+      <li><span class="n">A</span><div><b>Reference</b><div class="desc">Screening results, pipeline stages, verification results and default scoring weights.</div></div></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ───────────────────────── 1 Overview ───────────────────────── -->
+<section class="chapter">
+  <div class="chapter-head"><span class="num">1</span><h1>Overview</h1></div>
+  <p class="lead">The Solar Talent Registry is Waterlift Solar's online recruitment system for solar PV technicians. Candidates apply from their phones through links in social-media adverts; admins verify credentials, review a preliminary score, run assessments and build a pool of approved technicians.</p>
+
+  <h2>Two kinds of technician</h2>
+  <div class="side">
+    <div class="note avoid"><b>EPRA-licensed solar technician</b>Holds an EPRA solar PV technician licence, class T1, T2 or T3. The licence must be valid and is checked by an admin against EPRA's public register.</div>
+    <div class="note avoid"><b>Qualified solar technician</b>Has a solar or electrical qualification — NITA trade test, artisan, certificate, diploma, Higher National Diploma or degree — but no EPRA licence yet. Qualifications are confirmed with the college or examining body.</div>
+  </div>
+  <p>Both tracks use the same application and the same scoring for experience, technical evidence and referees, so candidates can be compared side by side. Only the entry check (the <em>credential gate</em>) differs. EPRA-licensed candidates can also list qualifications.</p>
+
+  <h2>The recruitment journey</h2>
+  <div class="flow">
+    <div><b>Advert</b>Share a tracked link on Facebook, WhatsApp, LinkedIn…</div><span class="arrow">›</span>
+    <div><b>Application</b>Candidate applies on their phone in about 10 minutes.</div><span class="arrow">›</span>
+    <div><b>Screening</b>Automatic preliminary score and credential gate.</div><span class="arrow">›</span>
+    <div><b>Verification</b>Admin checks the licence or qualifications.</div><span class="arrow">›</span>
+    <div><b>Assessment</b>Technical and practical tests, reference checks.</div><span class="arrow">›</span>
+    <div><b>Approved pool</b>Ready to be assigned to projects.</div>
+  </div>
+
+  <div class="tip"><b>People decide, not the score</b>The score only sorts applications so the strongest are seen first. It uses the length of written answers as a rough proxy for evidence, so it can be wrong. An admin must review every application, and every adverse decision (rejecting a candidate) needs a person's judgement and a written reason.</div>
+
+  <h2>Who uses what</h2>
+  <table>
+    <tr><th style="width:28%">Who</th><th style="width:32%">Where</th><th>What they can do</th></tr>
+    <tr><td><strong>Candidates</strong></td><td><code>careers.waterlift.co.ke</code><br><code>…/apply</code> · <code>…/status</code></td><td>Apply, receive a confirmation email, check their status, withdraw, and ask for their data to be deleted. They never see scores or internal labels.</td></tr>
+    <tr><td><strong>Admins</strong></td><td><code>careers.waterlift.co.ke/login</code></td><td>Everything in this manual. There is one role — Admin — and every admin has the same access, protected by a password and a two-factor code.</td></tr>
+  </table>
+
+  <h2>Main menu</h2>
+  <dl class="kv">
+    <dt>Dashboard</dt><dd>Headline figures and charts for the whole pipeline.</dd>
+    <dt>Candidates</dt><dd>Every application, with search, filters and CSV export. Open a row to review the candidate.</dd>
+    <dt>Assessments</dt><dd>Upcoming assessments, those awaiting a result, and recent results.</dd>
+    <dt>Messages</dt><dd>Email a filtered group of candidates and see every email the system has sent.</dd>
+    <dt>Scoring rules</dt><dd>View and change the weights and thresholds behind the preliminary score.</dd>
+  </dl>
+  <p>The sun/moon button at the top right switches between light and dark mode. The button at the top left collapses the menu.</p>
+</section>
+
+<!-- ───────────────────────── 2 Sign-in ───────────────────────── -->
+<section class="chapter">
+  <div class="chapter-head"><span class="num">2</span><h1>Signing in and account security</h1></div>
+  <p class="lead">Admin accounts can see candidates' personal data, so every sign-in needs a password <em>and</em> a 6-digit code from an authenticator app on your phone.</p>
+
+  <div class="side">
+    <figure class="center"><img src="img/a01-login.png" style="max-height:92mm"><figcaption><b>Admin sign-in</b> at careers.waterlift.co.ke/login</figcaption></figure>
+    <figure class="center"><img src="img/a02-mfa.png" style="max-height:92mm"><figcaption><b>Second step:</b> the code from your authenticator app</figcaption></figure>
+  </div>
+
+  <h2>Your first sign-in</h2>
+  <ol class="steps">
+    <li>Open the invitation email from <strong>Waterlift Solar Careers</strong> and follow the link. Choose a password of at least 12 characters (a passphrase of several words works well).</li>
+    <li>Install a free authenticator app on your phone, such as <strong>Google Authenticator</strong> or <strong>Microsoft Authenticator</strong>.</li>
+    <li>The system opens the <strong>Two-factor authentication</strong> page and shows a QR code. In the app, add an account and scan the code (or type the key shown under it).</li>
+    <li>Type the 6-digit code the app shows and choose <strong>Turn on two-factor</strong>. You are taken to the dashboard.</li>
+  </ol>
+  <p>Two-factor is mandatory: until it is set up, the admin pages send you back to the set-up page.</p>
+
+  <h2>Signing in after that</h2>
+  <ol class="steps">
+    <li>Go to <code>careers.waterlift.co.ke/login</code> and enter your email and password.</li>
+    <li>Open your authenticator app and enter the current 6-digit code for Waterlift. Codes change every 30 seconds.</li>
+  </ol>
+  <p>To sign out, use the arrow button beside your name at the bottom of the menu. Always sign out on shared computers.</p>
+
+  <h2>Forgotten password</h2>
+  <p>On the sign-in page, type your email and choose <strong>Forgot password?</strong>. A reset link arrives by email (check spam). The same message is shown whether or not the address belongs to an admin, so the page can't be used to discover accounts.</p>
+
+  <h2>Lost or replaced phone</h2>
+  <div class="warn"><b>If you lose access to your authenticator app</b>You cannot sign in until your authenticator is reset. The system administrator (the person with access to the Supabase project) opens <em>Authentication → Users → your account</em>, deletes the MFA factor, and you set up two-factor again on your next sign-in. Keep at least two admins so one can always ask for help.</div>
+
+  <h2>Adding or removing admins</h2>
+  <p>New admins are invited by the system administrator (there is no public sign-up). The new admin receives an email invitation and follows the steps above. To remove an admin, ask the system administrator to deactivate the account; their past actions stay in the audit history.</p>
+</section>
+
+<!-- ───────────────────────── 3 Links ───────────────────────── -->
+<section class="chapter">
+  <div class="chapter-head"><span class="num">3</span><h1>Advertising and application links</h1></div>
+  <p class="lead">Every advert should point to the application page with a short tag saying where it was posted. The dashboard then shows which channels bring in applicants.</p>
+
+  <h2>Building a link</h2>
+  <p>Start with <code>https://careers.waterlift.co.ke/apply</code> and add tags after a question mark, joined with <code>&amp;</code>:</p>
+  <table>
+    <tr><th style="width:30%">Tag</th><th style="width:30%">Example</th><th>What it does</th></tr>
+    <tr><td><code>src</code></td><td><code>?src=facebook</code></td><td>Records the channel. Accepted: <code>facebook</code> (or <code>fb</code>), <code>instagram</code>, <code>linkedin</code>, <code>x</code>, <code>tiktok</code>, <code>whatsapp</code> (or <code>wa</code>), <code>youtube</code>. Anything else counts as "Other link".</td></tr>
+    <tr><td><code>utm_source</code>, <code>utm_medium</code>, <code>utm_campaign</code></td><td><code>?utm_source=fb&amp;utm_campaign=technicians-2026</code></td><td>Standard marketing tags, used instead of <code>src</code> if your advert tool adds them automatically. The campaign name is shown on each candidate.</td></tr>
+    <tr><td><code>track</code></td><td><code>?track=qualified</code></td><td>Preselects the track: <code>qualified</code> or <code>epra</code>. The candidate can still change it.</td></tr>
+  </table>
+
+  <h3>Ready-made examples</h3>
+  <table>
+    <tr><th style="width:38%">Advert</th><th>Link</th></tr>
+    <tr><td>Facebook post, all technicians</td><td><code>careers.waterlift.co.ke/apply?src=facebook</code></td></tr>
+    <tr><td>WhatsApp group, qualified technicians</td><td><code>careers.waterlift.co.ke/apply?src=whatsapp&amp;track=qualified</code></td></tr>
+    <tr><td>LinkedIn, EPRA-licensed, named campaign</td><td><code>careers.waterlift.co.ke/apply?src=linkedin&amp;track=epra&amp;utm_campaign=nairobi-oct</code></td></tr>
+  </table>
+  <div class="note"><b>Link previews</b>When the link is pasted into Facebook, WhatsApp, LinkedIn or X, a branded preview card appears automatically ("Now hiring: solar PV technicians").</div>
+  <div class="tip"><b>Tip</b>Use a different <code>utm_campaign</code> for each advert run (for example the month or region) so you can compare them in the candidates list and the CSV export.</div>
+</section>
+
+<!-- ───────────────────────── 4 Candidates ───────────────────────── -->
+<section class="chapter">
+  <div class="chapter-head"><span class="num">4</span><h1>What candidates see</h1></div>
+  <p class="lead">Knowing the candidate's side helps you answer their questions. The application is designed for phones, takes about 10 minutes, and saves answers on the candidate's device as they go.</p>
+
+  <figure class="wide"><img src="img/c01-landing.png"><figcaption><b>Home page.</b> "Apply now" opens the application; "Check your application" opens the status page.</figcaption></figure>
+
+  <h2>The five steps</h2>
+  <table>
+    <tr><th style="width:6%">#</th><th style="width:26%">Step</th><th>What is asked</th></tr>
+    <tr><td>1</td><td>Identity &amp; location</td><td>Full name, mobile (Kenyan number), email, town, county, where they can work (county / region / anywhere in Kenya) and preferred type of work.</td></tr>
+    <tr><td>2</td><td>Licence &amp; qualifications</td><td>The track. EPRA track: licence class T1–T3, licence number, expiry date, optional licence note and copy. Qualified track: at least one qualification (level, course, institution, year, optional certificate number). Up to 3 qualifications on either track. Consent to verification.</td></tr>
+    <tr><td>3</td><td>Installation experience</td><td>Years of solar experience, largest PV array (kWp), optional largest inverter and battery, types of installation, and their largest project and exact role.</td></tr>
+    <tr><td>4</td><td>Technical capability</td><td>Inverter brands/models, battery brands/chemistries, optional logger/site-audit experience, certifications and safety training, high-voltage experience, energy-auditor licence, optional certificate uploads.</td></tr>
+    <tr><td>5</td><td>Referees &amp; consent</td><td>Two referees (a third is optional), consent to processing, optional consent to the 24-month talent pool.</td></tr>
+  </table>
+
+  <div class="row phones">
+    <figure><img src="img/c03-apply-step2-epra.png"><figcaption><b>Step 2, EPRA track:</b> class, number and expiry.</figcaption></figure>
+    <figure><img src="img/c04-apply-step2-qualified.png"><figcaption><b>Step 2, qualified track:</b> qualifications instead of a licence.</figcaption></figure>
+  </div>
+
+  <h3>Good to know</h3>
+  <ul>
+    <li><strong>Saved as they go.</strong> If the candidate closes the page, their answers are restored on the same phone. Consent boxes are never restored — they must be ticked again.</li>
+    <li><strong>Uploads are optional.</strong> PDF, JPG, PNG or WebP, up to 5 MB each and 6 files per application. Every file is checked when the application is submitted; disguised or unsupported files are rejected.</li>
+    <li><strong>Errors are shown on the field</strong> and the candidate cannot continue until the step is complete.</li>
+    <li><strong>Repeat applicants</strong> (same email) can apply again; their stored contact details are not overwritten from the public form. Any differences are recorded for an admin to review.</li>
+  </ul>
+
+  <div class="row phones">
+    <figure><img src="img/c05-apply-success.png"><figcaption><b>Confirmation</b> with the reference number, e.g. <span class="mono">ELD-Q-0037</span>.</figcaption></figure>
+    <figure><img src="img/c07-status-view.png"><figcaption><b>Private status page</b>, opened from the link in the email.</figcaption></figure>
+  </div>
+
+  <h2>Reference numbers</h2>
+  <p>Each application gets a reference made of a county code, the licence class (or <strong>Q</strong> for the qualified track) and a number — for example <span class="mono">NAK-T2-0012</span> or <span class="mono">KIS-Q-0034</span>. Ask candidates for it whenever they contact you.</p>
+
+  <h2>Confirmation email and status page</h2>
+  <p>After submitting, the candidate receives an email with their reference and a <strong>private status link valid for 30 days</strong>. The status page shows plain-language progress (received → licence/qualification check &amp; assessment → reference checks → approved pool) and whether their licence or qualifications have been verified. It never shows the score.</p>
+  <p>From the status page the candidate can <strong>withdraw</strong> their application or <strong>request deletion</strong> of their data (see chapter 11). If the link has expired, they enter their email at <code>careers.waterlift.co.ke/status</code> and a new link is sent to the email on file.</p>
+</section>
+
+<!-- ───────────────────────── 5 Dashboard ───────────────────────── -->
+<section class="chapter">
+  <div class="chapter-head"><span class="num">5</span><h1>Dashboard</h1></div>
+  <p class="lead">The first page after sign-in. It gives a quick picture of the whole pipeline.</p>
+  <figure class="wide"><img src="img/a03-dashboard.png"><figcaption><b>Dashboard</b> (fictional demo records).</figcaption></figure>
+  <dl class="kv">
+    <dt>Applications</dt><dd>Total applications, split into EPRA-licensed and qualified.</dd>
+    <dt>Credentials verified</dt><dd>Applications whose licence (EPRA track) or at least one qualification (qualified track) an admin has confirmed.</dd>
+    <dt>Priority review</dt><dd>Eligible applications scoring in the top band — review these first.</dd>
+    <dt>Licences expiring</dt><dd>EPRA licences expiring within 90 days; listed at the bottom of the page.</dd>
+    <dt>Pipeline</dt><dd>How many applications are at each stage.</dd>
+    <dt>Preliminary screening</dt><dd>How many applications fall in each screening result.</dd>
+    <dt>Where applicants come from</dt><dd>Applications per advert channel, from the link tags (chapter 3).</dd>
+  </dl>
+</section>
+
+<!-- ───────────────────────── 6 Candidates ───────────────────────── -->
+<section class="chapter">
+  <div class="chapter-head"><span class="num">6</span><h1>Candidates list</h1></div>
+  <p class="lead">Every application in one table. Click a candidate's name to open their page.</p>
+  <figure class="wide"><img src="img/a04-candidates.png" style="max-height:95mm"><figcaption><b>Candidates list</b> with search and filters.</figcaption></figure>
+  <h2>Finding candidates</h2>
+  <ul>
+    <li><strong>Search</strong> by name, reference or town.</li>
+    <li><strong>Filter</strong> by region, track, licence class, screening result and advert source. Choose <em>Clear filters</em> to reset.</li>
+    <li><strong>Sort</strong> by score or largest PV system by clicking the column heading. The list starts sorted by score, highest first.</li>
+  </ul>
+  <h2>Reading a row</h2>
+  <p>The <strong>Licence / qualification</strong> column shows the EPRA class with its verification result, or — for qualified candidates — the highest qualification and whether it has been verified. The <strong>Screening</strong> column shows the preliminary result (see Reference, A.1).</p>
+  <h2>Exporting to CSV</h2>
+  <p>Use <strong>Export CSV</strong> to download all applications for a spreadsheet: reference, name, location, track, licence details, highest qualification, score, screening result, stage, source and date.</p>
+  <div class="warn"><b>Exports contain personal data</b>Every export is recorded in the audit log. Store downloaded files securely, share them only with people who need them, and delete them when no longer needed.</div>
+</section>
+
+<!-- ───────────────────────── 7 Candidate page ───────────────────────── -->
+<section class="chapter">
+  <div class="chapter-head"><span class="num">7</span><h1>Reviewing a candidate</h1></div>
+  <p class="lead">The candidate page holds everything about one application, and is where most of the work happens.</p>
+  <figure class="wide"><img src="img/a05-detail-top.png"><figcaption><b>Candidate page.</b> The badges under the reference show the track, screening result and stage.</figcaption></figure>
+
+  <h2>Preliminary score</h2>
+  <figure><img src="img/a06-score.png"><figcaption><b>Score breakdown</b> by section and criterion, with the rules version used.</figcaption></figure>
+  <p>The score (out of 100) is made of <strong>Experience</strong> (30), <strong>Technical capability</strong> (40) and <strong>Verifiability &amp; mobility</strong> (30). Each line shows the points earned and the maximum. If the credential gate failed, the reasons are listed (for example "Licence expired 12 days ago").</p>
+  <p><strong>Re-score</strong> recalculates using the current scoring rules — useful after new rules are published. Earlier scores are kept in the history.</p>
+
+  <h2>Verifying an EPRA licence</h2>
+  <div class="side">
+    <figure><img src="img/a07-licence.png"><figcaption><b>EPRA licence</b> card.</figcaption></figure>
+    <div>
+      <ol class="steps">
+        <li>Look the licence up on EPRA's public register of solar PV technicians.</li>
+        <li>Compare the class, status and expiry with what the candidate entered.</li>
+        <li>Choose the <strong>Register check result</strong>: Verified, Not on register, Mismatch or Expired.</li>
+        <li>Write what you saw (class, status, expiry, date checked) and choose <strong>Save verification</strong>. A note is required for every result except Pending.</li>
+      </ol>
+      <p>The expiry badge turns amber within 90 days and red once expired.</p>
+    </div>
+  </div>
+
+  <h2>Checking qualifications</h2>
+  <div class="side">
+    <figure><img src="img/a08-qualifications.png"><figcaption><b>Qualifications</b> card (qualified track).</figcaption></figure>
+    <div>
+      <p>There is no public register for qualifications, so confirm each one with the issuing college or examining body (KNEC, NITA, TVET CDACC), or by seeing the original certificate.</p>
+      <ol class="steps">
+        <li>Choose the <strong>Check result</strong>: Verified, Could not confirm, or Details don't match.</li>
+        <li>Write how you checked it, then choose <strong>Save check</strong>.</li>
+      </ol>
+      <p>For qualified-track candidates, confirm at least one qualification at or above the minimum level. EPRA-licensed candidates' qualifications are optional extras.</p>
+    </div>
+  </div>
+
+  <h2>Documents</h2>
+  <p>Uploaded files (licence copies, qualification and training certificates) are listed in the <strong>Documents</strong> card. Clicking one opens it through a private link that expires after 60 seconds. Every view is recorded.</p>
+
+  <h2>Moving through the pipeline</h2>
+  <div class="side">
+    <figure><img src="img/a09-pipeline.png"><figcaption><b>Pipeline</b> card.</figcaption></figure>
+    <div>
+      <p>Choose the new stage and <strong>Update stage</strong>. Stages: New application → Technical assessment → Practical assessment → Reference checks → Approved pool, plus Rejected after review and Withdrawn.</p>
+      <p><strong>Rejected</strong> and <strong>Withdrawn</strong> require a reason of at least 10 characters — the candidate may ask why. Scheduling an assessment moves the stage forward automatically.</p>
+    </div>
+  </div>
+
+  <h2>Notes and history</h2>
+  <figure><img src="img/a13-notes.png"><figcaption><b>Notes &amp; history.</b> Notes are visible to all admins; the history records every change and email.</figcaption></figure>
+  <p>Add notes for other admins — phone calls, documents received, referee feedback. The history below lists notes, stage changes, verifications, scores, emails and document views with who did them and when. History cannot be edited or deleted.</p>
+  <p>The page also has <strong>Contact</strong> details (tap to call or email), the candidate's <strong>Consents</strong>, an <strong>Assessments</strong> card (chapter 8), a <strong>Message</strong> composer (chapter 9) and <strong>Data protection</strong> (chapter 11).</p>
+</section>
+
+<!-- ───────────────────────── 8 Assessments ───────────────────────── -->
+<section class="chapter">
+  <div class="chapter-head"><span class="num">8</span><h1>Assessments</h1></div>
+  <p class="lead">Shortlisted candidates take a <strong>technical</strong> (knowledge) and/or <strong>practical</strong> (hands-on) assessment. Results stay with the application.</p>
+
+  <h2>Scheduling an assessment</h2>
+  <div class="side">
+    <figure><img src="img/a10-assessments-card.png"><figcaption><b>Schedule assessment</b> on the candidate page.</figcaption></figure>
+    <div>
+      <ol class="steps">
+        <li>On the candidate page, choose <strong>Schedule assessment</strong>.</li>
+        <li>Pick Technical or Practical, the date and time (<strong>Nairobi time</strong>), the location and any instructions.</li>
+        <li>Leave <strong>Email the invitation</strong> ticked to send the candidate the details, then choose <strong>Schedule</strong>.</li>
+      </ol>
+      <p>The application moves to the matching stage if it is not already further along.</p>
+    </div>
+  </div>
+
+  <h2>Recording the result</h2>
+  <p>After the assessment time, the candidate page and the Assessments page show it as <strong>awaiting result</strong>. Record whether it was completed (with Pass or Fail and an optional score out of 100), a no-show or cancelled, plus assessor notes.</p>
+  <figure><img src="img/a11-assessment-result.png" style="max-width:150mm"><figcaption><b>A recorded result</b> on the candidate page.</figcaption></figure>
+
+  <h2>The Assessments page</h2>
+  <figure class="wide"><img src="img/a16-assessments.png"><figcaption><b>Assessments page:</b> upcoming, awaiting result and recent results across all candidates.</figcaption></figure>
+</section>
+
+<!-- ───────────────────────── 9 Messages ───────────────────────── -->
+<section class="chapter">
+  <div class="chapter-head"><span class="num">9</span><h1>Messages and emails</h1></div>
+  <p class="lead">All email is sent from <strong>info@waterlift.co.ke</strong> as "Waterlift Solar Careers". Replies go to that inbox.</p>
+
+  <h2>Messaging one candidate</h2>
+  <p>Use the <strong>Message</strong> card on the candidate page. Pick a template or write your own, then <strong>Send email</strong>. The message appears in the candidate's history.</p>
+
+  <h2>Messaging a group</h2>
+  <figure class="wide"><img src="img/a17-messages.png"><figcaption><b>Messages page:</b> group filters, templates and the email log.</figcaption></figure>
+  <ol class="steps">
+    <li>Choose who: filter by stage, region, track, licence class and screening result. The count updates as you go. Rejected and withdrawn candidates are excluded unless you pick that stage.</li>
+    <li>Pick a template — <em>Request documents, Ask for clarification, Licence renewal, Welcome to the pool, Not progressing</em> — or write your own.</li>
+    <li>Use <code>{{name}}</code> for each candidate's first name and <code>{{reference}}</code> for their reference.</li>
+    <li>Choose <strong>Review &amp; send</strong>, check the summary, and confirm.</li>
+  </ol>
+  <div class="note"><b>Sending limits</b>A group send is limited to <strong>100 candidates</strong>. The email service's free plan allows 300 emails a day across the whole system, including automatic emails — narrow the filters if needed.</div>
+
+  <h2>Email log</h2>
+  <p>The bottom of the Messages page lists every email the system has sent, with type, recipient, subject, who sent it and status: <span class="pill p-ok">Sent</span> <span class="pill p-neutral">Not sent</span> (email not configured) or <span class="pill p-bad">Failed</span>.</p>
+
+  <h2>Automatic emails</h2>
+  <table>
+    <tr><th style="width:28%">Email</th><th style="width:28%">To</th><th>When</th></tr>
+    <tr><td>Application received</td><td>Candidate</td><td>Straight after submitting, with the reference and a 30-day status link.</td></tr>
+    <tr><td>Status link</td><td>Candidate</td><td>When they ask for a new link on the status page.</td></tr>
+    <tr><td>Licence expiry reminder</td><td>Candidate (open applications)</td><td>90, 30 and 7 days before their EPRA licence expires, and on the day. Each reminder is sent once.</td></tr>
+    <tr><td>Assessment invitation</td><td>Candidate</td><td>When an assessment is scheduled with "Email the invitation" ticked.</td></tr>
+    <tr><td>Daily summary</td><td>Every admin</td><td>Every morning (about 08:00 Nairobi): new applications, priority reviews, credentials awaiting checks, licences expiring within 30 days.</td></tr>
+    <tr><td>Invitation / password reset</td><td>Admins</td><td>When an admin is invited or uses "Forgot password?".</td></tr>
+  </table>
+</section>
+
+<!-- ───────────────────────── 10 Scoring ───────────────────────── -->
+<section class="chapter">
+  <div class="chapter-head"><span class="num">10</span><h1>Scoring rules</h1></div>
+  <p class="lead">The preliminary score sorts applications so the strongest are reviewed first. Its weights and thresholds are set on the <strong>Scoring rules</strong> page and are versioned, so you can always see which rules produced a score.</p>
+
+  <h2>How a result is decided</h2>
+  <ol class="steps">
+    <li><strong>Credential gate.</strong> EPRA track: a licence class T1–T3, a licence number, an expiry date that has not passed, and consent to verification. Qualified track: at least one qualification at or above the minimum level (default: artisan certificate / NITA trade test) and consent. If the gate fails the result is <span class="pill p-bad">Ineligible (credentials)</span>, whatever the score.</li>
+    <li><strong>Score</strong> out of 100 from experience, technical capability and verifiability &amp; mobility.</li>
+    <li><strong>Routing</strong> by threshold (defaults): <span class="pill p-ok">Priority review</span> 80+, <span class="pill p-info">Standard review</span> 65–79, <span class="pill p-warn">Needs clarification</span> 50–64, <span class="pill p-bad">Below threshold</span> under 50.</li>
+  </ol>
+  <div class="tip"><b>Ineligible and below-threshold are not rejections</b>Always confirm with the candidate before acting — for example, they may have renewed their licence or mistyped the expiry date.</div>
+
+  <h2>Changing the rules</h2>
+  <figure><img src="img/a18-scoring-rules.png" style="max-height:150mm"><figcaption><b>Scoring rules editor.</b></figcaption></figure>
+  <ol class="steps">
+    <li>Edit the numbers. Text-answer rules have three values: the detail needed (characters), points if detailed, and points otherwise. The banner shows the maximum per section — aim for a total of exactly 100.</li>
+    <li>Set <strong>Qualified track: minimum qualification</strong> if you want a stricter gate (for example Diploma or higher).</li>
+    <li>Choose <strong>Preview impact</strong> to see how open applications would move between results — nothing is saved.</li>
+    <li>Describe what changed and why, decide whether to <strong>re-score all open applications now</strong>, and choose <strong>Publish as v…</strong>. A new version is created; earlier scores keep the version they were made with.</li>
+  </ol>
+  <p>The editor will not publish invalid rules, for example thresholds out of order or weights that make Priority review impossible to reach. The <strong>Version history</strong> shows who published each version and why.</p>
+</section>
+
+<!-- ───────────────────────── 11 Data protection ───────────────────────── -->
+<section class="chapter">
+  <div class="chapter-head"><span class="num">11</span><h1>Data protection</h1></div>
+  <p class="lead">The system is designed around Kenya's Data Protection Act 2019. These features help Waterlift meet its obligations — they don't replace good judgement.</p>
+
+  <h2>Consent</h2>
+  <p>Candidates give consent to recruitment processing and to verification of their licence and qualifications; joining the talent pool is optional. Each consent is stored with the date and the version of the privacy notice they saw. The <strong>Consents</strong> card on the candidate page shows them.</p>
+
+  <h2>How long data is kept</h2>
+  <table>
+    <tr><th style="width:45%">Situation</th><th>What happens</th></tr>
+    <tr><td>Application open or in the approved pool</td><td>Kept.</td></tr>
+    <tr><td>Rejected or withdrawn</td><td>Erased automatically <strong>12 months</strong> after the application closed.</td></tr>
+    <tr><td>Rejected or withdrawn, with talent-pool consent</td><td>Erased automatically <strong>24 months</strong> after closing.</td></tr>
+  </table>
+  <p>The check runs every day. Erasure removes the candidate, their applications and their uploaded files, leaving only a record that an erasure happened (with no personal details).</p>
+
+  <h2>Requests from candidates</h2>
+  <ul>
+    <li><strong>Withdrawal</strong> — candidates can withdraw from their status page; the stage changes to Withdrawn and appears in the history as done by the candidate.</li>
+    <li><strong>Deletion</strong> — a request from the status page shows a red <span class="pill p-bad">Data deletion requested</span> badge on the candidate page and in the history. Act on it promptly.</li>
+    <li><strong>Access or correction</strong> — handle by email from info@waterlift.co.ke; the CSV export and candidate page show what is held.</li>
+  </ul>
+
+  <h2>Erasing a candidate</h2>
+  <div class="side">
+    <figure><img src="img/a14-data-protection.png"><figcaption><b>Data protection</b> card.</figcaption></figure>
+    <div>
+      <ol class="steps">
+        <li>On the candidate page, choose <strong>Erase candidate data</strong>.</li>
+        <li>Type the application reference exactly to confirm.</li>
+        <li>Confirm. All their applications, documents and contact details are permanently deleted.</li>
+      </ol>
+      <div class="warn"><b>This cannot be undone</b>Check you have the right candidate first.</div>
+    </div>
+  </div>
+
+  <h2>Audit trail and security</h2>
+  <ul>
+    <li>Every verification, stage change, note, score, export, email and document view is recorded with who did it and when.</li>
+    <li>Documents are stored privately and opened only through short-lived links.</li>
+    <li>Candidates never see scores, screening results or admin notes.</li>
+    <li>Use your own account only, keep two-factor on, and never forward exports or documents to personal email.</li>
+  </ul>
+  <div class="note"><b>Privacy notice</b>The public notice is at <code>careers.waterlift.co.ke/privacy</code>. It is a draft awaiting review by Waterlift's data protection lead; any change to it or to the consent wording must be versioned by the system administrator.</div>
+</section>
+
+<!-- ───────────────────────── 12 FAQ ───────────────────────── -->
+<section class="chapter">
+  <div class="chapter-head"><span class="num">12</span><h1>Troubleshooting and FAQ</h1></div>
+  <table>
+    <tr><th style="width:38%">Question</th><th>Answer</th></tr>
+    <tr><td>I get "That code didn't match".</td><td>Use the current code — they change every 30 seconds. Check your phone's time is set automatically; a wrong clock produces wrong codes.</td></tr>
+    <tr><td>I'm signed in but sent to the two-factor page.</td><td>Two-factor isn't set up on your account yet. Complete the set-up (chapter 2).</td></tr>
+    <tr><td>"This account does not have admin access."</td><td>Your login exists but isn't an active admin. Ask the system administrator.</td></tr>
+    <tr><td>A candidate didn't get the confirmation email.</td><td>Ask them to check spam. Look in the email log (Messages page) for its status. They can request a new status link at /status.</td></tr>
+    <tr><td>A candidate says they can't continue on the form.</td><td>Each step shows a red message under the field that needs attention. Common causes: phone not a Kenyan number, licence expiry missing, no qualification added on the qualified track, or a consent box not ticked.</td></tr>
+    <tr><td>A candidate chose the wrong track.</td><td>Ask them to apply again choosing the right track (the same email is fine), then withdraw the first application with a reason.</td></tr>
+    <tr><td>A licensed candidate shows "Ineligible (credentials)".</td><td>Open the score card: the reasons are listed. Usually an expired or missing expiry date. Confirm with the candidate and ask for renewal evidence.</td></tr>
+    <tr><td>A group email says too many recipients.</td><td>Group sends are limited to 100. Add filters (region, stage, track) and send in batches.</td></tr>
+    <tr><td>Scores changed overnight.</td><td>Someone published new scoring rules and re-scored. Check Scoring rules → Version history.</td></tr>
+    <tr><td>Where do candidates' replies go?</td><td>To the info@waterlift.co.ke inbox. Record anything important as a note on the candidate.</td></tr>
+  </table>
+</section>
+
+<!-- ───────────────────────── Appendix ───────────────────────── -->
+<section class="chapter">
+  <div class="chapter-head"><span class="num">A</span><h1>Reference</h1></div>
+
+  <h2>A.1 Screening results</h2>
+  <table>
+    <tr><th style="width:30%">Result</th><th>Meaning and suggested action</th></tr>
+    <tr><td><span class="pill p-ok">Priority review</span></td><td>Score 80–100 and eligible. Verify credentials and invite to the technical assessment first.</td></tr>
+    <tr><td><span class="pill p-info">Standard review</span></td><td>Score 65–79. Standard evidence review.</td></tr>
+    <tr><td><span class="pill p-warn">Needs clarification</span></td><td>Score 50–64. Request missing documents or details.</td></tr>
+    <tr><td><span class="pill p-bad">Below threshold</span></td><td>Score under 50. A person checks before any adverse action.</td></tr>
+    <tr><td><span class="pill p-bad">Ineligible (credentials)</span></td><td>Licence or qualification gate failed. Confirm with the candidate first.</td></tr>
+  </table>
+
+  <h2>A.2 Pipeline stages</h2>
+  <table>
+    <tr><th style="width:30%">Admin label</th><th style="width:35%">What the candidate sees</th><th>Notes</th></tr>
+    <tr><td>New application</td><td>Received — under review</td><td>Starting stage.</td></tr>
+    <tr><td>Technical assessment</td><td>Assessment stage</td><td>Set automatically when a technical assessment is scheduled.</td></tr>
+    <tr><td>Practical assessment</td><td>Assessment stage</td><td>Set automatically when a practical assessment is scheduled.</td></tr>
+    <tr><td>Reference checks</td><td>Reference checks</td><td></td></tr>
+    <tr><td>Approved pool</td><td>Approved — in our technician pool</td><td>Kept until it is closed.</td></tr>
+    <tr><td>Rejected after review</td><td>Not progressing at this time</td><td>Reason required. Retention clock starts.</td></tr>
+    <tr><td>Withdrawn</td><td>Withdrawn</td><td>By an admin (reason required) or the candidate. Retention clock starts.</td></tr>
+  </table>
+
+  <h2>A.3 Verification results</h2>
+  <div class="side">
+    <table>
+      <tr><th>EPRA licence</th><th>Meaning</th></tr>
+      <tr><td><span class="pill p-warn">Pending</span></td><td>Not checked yet</td></tr>
+      <tr><td><span class="pill p-ok">Verified</span></td><td>Matches the register</td></tr>
+      <tr><td><span class="pill p-bad">Not on register</span></td><td>Could not be found</td></tr>
+      <tr><td><span class="pill p-bad">Mismatch</span></td><td>Details differ</td></tr>
+      <tr><td><span class="pill p-bad">Expired</span></td><td>Register shows expired</td></tr>
+    </table>
+    <table>
+      <tr><th>Qualification</th><th>Meaning</th></tr>
+      <tr><td><span class="pill p-warn">Pending</span></td><td>Not checked yet</td></tr>
+      <tr><td><span class="pill p-ok">Verified</span></td><td>Confirmed</td></tr>
+      <tr><td><span class="pill p-bad">Could not confirm</span></td><td>Institution couldn't confirm it</td></tr>
+      <tr><td><span class="pill p-bad">Details don't match</span></td><td>Details differ</td></tr>
+    </table>
+  </div>
+
+  <h2>A.4 Qualification levels (lowest to highest)</h2>
+  <p>NITA trade test (Grade I–III) and Artisan certificate (equal) · Certificate (TVET / KNEC / CDACC) · Diploma · Higher National Diploma · Degree (BSc / BEng / BTech). "Other course or training" is recorded but never meets the minimum on its own.</p>
+
+  <h2>A.5 Default scoring weights</h2>
+  <table>
+    <tr><th style="width:24%">Section (max)</th><th style="width:36%">Criterion</th><th>Points</th></tr>
+    <tr><td rowspan="3"><strong>Experience</strong> (30)</td><td>Years of experience</td><td>2 per year, up to 10</td></tr>
+    <tr><td>Largest PV array</td><td>1 per 10 kWp, up to 8</td></tr>
+    <tr><td>Installation categories</td><td>2 per category, up to 12</td></tr>
+    <tr><td rowspan="5"><strong>Technical</strong> (40)</td><td>Inverter evidence</td><td>8 if over 20 characters, otherwise 3</td></tr>
+    <tr><td>Battery evidence</td><td>8 if over 20 characters, otherwise 3</td></tr>
+    <tr><td>Logger / site audit</td><td>8 if over 25 characters</td></tr>
+    <tr><td>High-voltage evidence</td><td>8 if claimed and described in over 25 characters</td></tr>
+    <tr><td>Certifications &amp; safety</td><td>8 if over 20 characters</td></tr>
+    <tr><td rowspan="3"><strong>Verifiability &amp; mobility</strong> (30)</td><td>Referees 1, 2 and 3</td><td>8, 8 and 4 if over 20 characters each</td></tr>
+    <tr><td>Travel availability</td><td>Anywhere in Kenya 5 · region 3 · county 1</td></tr>
+    <tr><td>Largest project detail</td><td>5 if over 50 characters, otherwise 2</td></tr>
+  </table>
+  <p style="color:var(--muted);font-size:8.5pt">These are the original (version 1) weights. The rules in force may differ — check the Scoring rules page.</p>
+</section>
+
+</body>
+</html>
